@@ -154,7 +154,9 @@ sealed trait ByteString extends syntax.Ops[FingerTree[Int, Array[Byte]]] {
 
   final def toByteBuffer: ByteBuffer = ByteBuffer.wrap(toArray).asReadOnlyBuffer
 
-  final def toIndexedSeq: IndexedSeq[Byte] = self.foldMap(_.toIndexedSeq : IndexedSeq[Byte])
+//  import std.indexedSeq.indexedSeqMonoid
+  //final def toIndexedSeq: IndexedSeq[Byte] = self.foldMap(_.toIndexedSeq : IndexedSeq[Byte])
+  final def toIndexedSeq: IndexedSeq[Byte] = self.foldMap(_.toIndexedSeq)(std.indexedSeq.indexedSeqMonoid)
 
   final override def toString = new String(toArray)
 

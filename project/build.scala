@@ -86,10 +86,10 @@ object ScalaConduitsBuild extends Build {
   lazy val standardSettings = Defaults.defaultSettings ++ Seq(
     organization := "com.github.ab",
     version := "0.1-SNAPSHOT",
-    scalaVersion := "2.9.2",
-//    scalaVersion := "2.10.0-M2",
-    crossPaths := false,
-    scalacOptions  ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
+    scalaVersion := "2.10.0-RC5",
+    scalaBinaryVersion <<= scalaVersion,
+    crossVersion := CrossVersion.full,
+    scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
     resolvers ++= Seq("releases" at "http://oss.sonatype.org/content/repositories/releases",
                         "snapshots" at "http://oss.sonatype.org/content/repositories/snapshots")
   )
@@ -115,7 +115,7 @@ object ScalaConduitsBuild extends Build {
     // will not see the right classpath and die with a ConfigurationException
     // unfortunately `javaOptions` is a SettingsKey and `fullClasspath in Runtime` is a TaskKey, so we need to
     // jump through these hoops here in order to feed the result of the latter into the former
-    onLoad in Global ~= { previous => state =>
+    onLoad ~= { previous => state =>
       previous {
         state.get(key) match {
           case None =>
@@ -132,14 +132,12 @@ object ScalaConduitsBuild extends Build {
   )
 
   object Dependencies {
-    def scalaz = "org.scalaz" % "scalaz-core_2.9.2" % "7.0.0-M2"
-    def scalazEffect = "org.scalaz" % "scalaz-effect_2.9.2" % "7.0.0-M2"
-    def scalazConcurrent = "org.scalaz" % "scalaz-concurrent_2.9.2" % "7.0.0-M2"
-    //lazy val specs = "org.scala-tools.testing" %% "specs" % "1.6.7" % "test" withSources ()
-    def scalacheck = "org.scala-tools.testing" % "scalacheck_2.8.1" % "1.8" % "test"
+    val scalazVersion = "7.0.0-M6"
+    def scalaz = "org.scalaz" %% "scalaz-core" % scalazVersion
+    def scalazEffect = "org.scalaz" %% "scalaz-effect" % scalazVersion
+    def scalazConcurrent = "org.scalaz" %% "scalaz-concurrent" % scalazVersion
     def servlet = "javax.servlet" % "servlet-api" % "2.5" % "provided->default"
-    def ScalaCheck = "org.scala-tools.testing" % "scalacheck_2.9.1" % "1.9" % "test"
-
-    def Specs = "org.specs2" % "specs2_2.9.1" % "1.6.1" % "test"
+    def ScalaCheck = "org.scalacheck" %% "scalacheck" % "1.10.0" % "test"
+    def Specs = "org.specs2" %% "specs2" % "1.12.3" % "test"
   }
 }
