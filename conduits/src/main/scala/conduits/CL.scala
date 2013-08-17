@@ -68,7 +68,7 @@ object CL {
   /**
    * takes the given number of elements of the Stream, and returns the elements in the given [[scalaz.Monoid]].
    */
-  def takeM[F[_], M[_], A](n: Int)(implicit M: Monad[F], P: Pointed[M], MO: Monoid[M[A]]): Sink[A, F, M[A]] = {
+  def takeM[F[_], M[_], A](n: Int)(implicit M: Monad[F], P: Applicative[M], MO: Monoid[M[A]]): Sink[A, F, M[A]] = {
     def go(count: Int, acc: M[A]) = NeedInput(push(count, acc), pipeMonad[A, Void, F].point(acc))
     def push(count: Int, acc: M[A])(x: A): Sink[A, F, M[A]] = {
        if (count <= 0) Done(acc)
@@ -84,7 +84,7 @@ object CL {
   /**
    * Calls `takeM` using the Identity Monad.
    */
-  def takeId[M[_], A](n: Int)(implicit P: Pointed[M], MO: Monoid[M[A]]): Sink[A, Id, M[A]] = {
+  def takeId[M[_], A](n: Int)(implicit P: Applicative[M], MO: Monoid[M[A]]): Sink[A, Id, M[A]] = {
     implicit val idM = Id.id
     takeM(n)
   }
@@ -242,7 +242,7 @@ object CL {
     case (HaveOutput(_, close, _), Done(())) => PipeM(M.bind(runFinalize(close))(_ => M.point(Done(()))), close)
     case (Done(()), PipeM(_, close)) => PipeM(M.bind(runFinalize(close))(_ => M.point(Done(()))), close)
     case (PipeM(_, close), Done(())) => PipeM(M.bind(runFinalize(close))(_ => M.point(Done(()))), close)
-    case (PipeM(mx, closex), PipeM(my, closey)) => PipeM(M.map2(mx, my)((a, b) => zip(a, b)), closex.flatMap(_ => closey))
+    case (PipeM(mx, closex), PipeM(my, closey)) => PipeM(M.apply2(mx, my)((a, b) => zip(a, b)), closex.flatMap(_ => closey))
     case (PipeM(mx, closex), y@HaveOutput(_, closey, _)) => PipeM(M.map(mx)(x => zip(x, y)), closex.flatMap(_ => closey))
     case (x@HaveOutput(_, closex, _), PipeM(my, closey)) => PipeM(M.map(my)(y => zip(x, y)), closex.flatMap(_ => closey))
     case (HaveOutput(srcx, closex, x),HaveOutput(srcy, closey, y)) => HaveOutput(zip(srcx, srcy), closex.flatMap(_ => closey), (x, y))
@@ -274,8 +274,8 @@ object CL {
 
   import Void._
   private def zipSinks1[F[_], A, B, C](by: scalaz.Ordering)(f1: Sink[A, F, B], f2: Sink[A, F, C])(implicit M: Monad[F]): Sink[A, F, (B, C)] = (f1, f2) match {
-    case (PipeM(mpx, mx), py) => PipeM(M.map(mpx)(x => zipSinks1(by)(x, py)), finalizeMonad[F].map2(mx, py.pipeClose)((x, y) => (x, y)))
-    case (px, PipeM(mpy, my)) => PipeM(M.map(mpy)(y => zipSinks1(by)(px, y)), finalizeMonad[F].map2(px.pipeClose, my)((x, y) => (x, y)))
+    case (PipeM(mpx, mx), py) => PipeM(M.map(mpx)(x => zipSinks1(by)(x, py)), finalizeMonad[F].apply2(mx, py.pipeClose)((x, y) => (x, y)))
+    case (px, PipeM(mpy, my)) => PipeM(M.map(mpy)(y => zipSinks1(by)(px, y)), finalizeMonad[F].apply2(px.pipeClose, my)((x, y) => (x, y)))
     case (Done(x), Done(y)) => Done((x, y))
     case (NeedInput(fpx, px), NeedInput(fpy, py)) => NeedInput(i => zipSinks1(scalaz.Ordering.EQ)(fpx(i), fpy(i)), zipSinks1(scalaz.Ordering.EQ)(px, py))
     case (NeedInput(fpx, px), py) => NeedInput(i => zipSinks1(scalaz.Ordering.GT)(fpx(i), py), zipSinks1(scalaz.Ordering.EQ)(px, py))

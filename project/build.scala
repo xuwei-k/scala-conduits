@@ -86,9 +86,7 @@ object ScalaConduitsBuild extends Build {
   lazy val standardSettings = Defaults.defaultSettings ++ Seq(
     organization := "com.github.ab",
     version := "0.1-SNAPSHOT",
-    scalaVersion := "2.10.0-RC5",
-    scalaBinaryVersion <<= scalaVersion,
-    crossVersion := CrossVersion.full,
+    scalaVersion := "2.10.2",
     scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
     resolvers ++= Seq("releases" at "http://oss.sonatype.org/content/repositories/releases",
                         "snapshots" at "http://oss.sonatype.org/content/repositories/snapshots")
@@ -132,7 +130,7 @@ object ScalaConduitsBuild extends Build {
   )
 
   object Dependencies {
-    val scalazVersion = "7.0.0-M6"
+    val scalazVersion = "7.1.0-M2"
     def scalaz = "org.scalaz" %% "scalaz-core" % scalazVersion
     def scalazEffect = "org.scalaz" %% "scalaz-effect" % scalazVersion
     def scalazConcurrent = "org.scalaz" %% "scalaz-concurrent" % scalazVersion
